@@ -1,24 +1,41 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!-- No current test host runs this target framework, so the tests alone compile for
+         .NET 8 and exercise the netcoreapp3.0 build of the library. -->
+    <TargetFramework>net8.0</TargetFramework>
     <AssemblyName>OrderKit.Tests</AssemblyName>
     <RootNamespace>OrderKit.Tests</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A solution-wide /p:ErrorLog names one SARIF file for every project, and the
+         last project to compile wins. Dropping it here leaves the library's log intact. -->
+    <ErrorLog></ErrorLog>
   </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OrderKit\OrderKit.csproj" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NUnit" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.Mvc" />
-    <PackageReference Include="System.Text.RegularExpressions" />
-    <PackageReference Include="BouncyCastle" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
-
+  <!-- The test host needs a newer Newtonsoft.Json than the planted pin, so the central
+       pins are not forced onto this project's transitive packages. -->
+  <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\OrderKit\OrderKit.csproj" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" />
+    <PackageReference Include="SecurityCodeScan.VS2019" PrivateAssets="all" />
   </ItemGroup>
-
 </Project>
