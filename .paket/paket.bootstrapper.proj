@@ -1,0 +1,11 @@
+<Project>
+
+  <!-- Paket.Restore.targets calls this project's Restore target before it runs
+       `dotnet paket restore`. Restoring the local tool manifest here is what lets
+       a bare `dotnet restore OrderKit.sln` work on a fresh clone, with no separate
+       `dotnet tool restore` step. -->
+  <Target Name="Restore">
+    <Exec Command="dotnet tool restore" WorkingDirectory="$(MSBuildThisFileDirectory).." StandardOutputImportance="low" />
+  </Target>
+
+</Project>
