@@ -5,6 +5,8 @@
     <Deterministic>true</Deterministic>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Properties/AssemblyInfo.cs is the fixture's own; the SDK must not emit a second one. -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <!-- versions live in Directory.Packages.props -->
   </PropertyGroup>
 
