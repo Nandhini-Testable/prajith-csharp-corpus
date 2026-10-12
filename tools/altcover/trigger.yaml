@@ -2,14 +2,14 @@
 tool: AltCover
 slug: altcover
 kind: sdk
-status: not-installed
+status: active
 target_framework: net46
 language_version: "6"
 runner: tools/altcover/run.sh
 expects:
-  exit_code: 4
+  exit_code: 0
   reason: >-
-    Declares .NET Framework 2.0+ via a net20 recorder, so it is the one coverage tool in the roster that could reach this family. Blocked only by NuGet.
+    altcover.global 8.8.173 is pinned in .config/dotnet-tools.json. It instruments the built test output in place, so no project file names it.
 metrics:
   primary_for: 9
   alternative_for: 0
