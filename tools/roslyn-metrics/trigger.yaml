@@ -2,14 +2,14 @@
 tool: Roslyn analyzers (cognitive complexity)
 slug: roslyn-metrics
 kind: analyzer
-status: not-installed
+status: active
 target_framework: net7.0
 language_version: "11.0"
 runner: tools/roslyn-metrics/run.sh
 expects:
-  exit_code: 4
+  exit_code: 0
   reason: >-
-    The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to SonarAnalyzer.CSharp (rule S3776 is cognitive complexity). Analyzer packages come from NuGet, which is refused at this host's egress proxy.
+    The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to SonarAnalyzer.CSharp 9.32.0.97167 (rule S3776 is cognitive complexity), restored by Paket as an analyzer.
 metrics:
   primary_for: 7
   alternative_for: 0
