@@ -9,7 +9,7 @@ runner: tools/stryker/run.sh
 expects:
   exit_code: 0
   reason: >-
-    SDK-style solution with NUnit tests; dotnet-stryker mutation report written to reports/mutation-report.json.
+    dotnet-stryker 4.0.0 is pinned in .config/dotnet-tools.json and mutates this family: it restores the solution, mutates the library, runs the tests against each mutant and writes a mutation report. Also: the sheet makes it primary for 16 Data Flow metrics, which it cannot compute -- see roslyn-dataflow.
 metrics:
   primary_for: 23
   alternative_for: 7

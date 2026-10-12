@@ -2,14 +2,14 @@
 tool: OpenTelemetry (.NET) + OTLP exporter
 slug: opentelemetry
 kind: sdk
-status: active
+status: skipped
 target_framework: net8.0
 language_version: "12.0"
 runner: tools/opentelemetry/run.sh
 expects:
-  exit_code: 0
+  exit_code: 3
   reason: >-
-    ActivitySource spans captured during dotnet test; reports/otel-spans.json and reports/opentelemetry.json.
+    OpenTelemetry 1.19.1 and its OTLP exporter are restored into the test project, and TracingSetup.cs in the test project wraps the run in a trace. Spans leave the process only when a collector is named; with none the export is dropped, which would be a structurally zero result. Note separately that tracing is not path coverage.
 metrics:
   primary_for: 1
   alternative_for: 0
