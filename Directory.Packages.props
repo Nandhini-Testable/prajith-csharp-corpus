@@ -4,11 +4,29 @@
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Planted, deliberately vulnerable pins: see PLANTED-CVES.md. -->
     <PackageVersion Include="Newtonsoft.Json" Version="9.0.1" />
     <PackageVersion Include="System.Net.Http" Version="4.3.0" />
     <PackageVersion Include="Microsoft.AspNet.Mvc" Version="5.2.3" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.0" />
     <PackageVersion Include="BouncyCastle" Version="1.8.1" />
-    <PackageVersion Include="NUnit" Version="2.6.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Lets a .NET Framework target compile where no targeting pack is installed. -->
+    <PackageVersion Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" />
+    <!-- Test framework. -->
+    <PackageVersion Include="NUnit" Version="3.13.3" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Tool pins follow the C# sheet of the Whitebox Tools Registry. -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" />
+    <PackageVersion Include="SecurityCodeScan.VS2019" Version="5.6.7" />
+    <!-- Path tracing. The registry names no version for it. -->
+    <PackageVersion Include="OpenTelemetry" Version="1.19.1" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
   </ItemGroup>
 </Project>
