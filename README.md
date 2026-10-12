@@ -49,13 +49,14 @@ csc -langversion:11.0   ->  error CS8025: Feature 'async function' is not availa
 
 ## Supported tools
 
-5 of the 19 tools in the roster are expected to fire on this branch. The rest exit
+11 of the 19 tools in the roster are expected to fire on this branch. The rest exit
 3 (cannot run here) or 4 (absent from this host), each with its reason in both
 `run.sh` and `trigger.yaml`.
 
-**A tool that does not fire is a result, not a failure.** What a family with *no*
-firing tools cannot do is distinguish "correctly detected nothing" from "the scan
-never ran" - so the source-level tools below are the built-in negative control:
+**A tool that does not fire is a result, not a failure.** The source-level tools
+below never load a compiler, so they remain the built-in negative control: if the
+build-backed tools go dark, these still distinguish "correctly detected nothing"
+from "the scan never ran".
 
 - Lizard
 - jscpd
@@ -73,17 +74,40 @@ never ran" - so the source-level tools below are the built-in negative control:
 | Trivy | not-installed | Standalone Go binary, absent from this host. Class C: reads manifests/lockfiles. |
 | PyDriller | active | Python, reads git only. Class C: never touches the source language. |
 | git log --numstat | active | stdlib git. Class C. Counts Co-authored-by trailers, not just the author field -- the Ty |
-| diff-cover | skipped | Class C: reads Cobertura/OpenCover XML. No coverage report can be produced on this famil |
-| Roslyn analyzers (cognitive complexity) | not-installed | The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to S |
-| Roslyn SAST analyzers | not-installed | The sheet says 'roslyn sast', also not a package. Resolved here to SecurityCodeScan + Mi |
+| diff-cover | active | Class C: reads Cobertura/OpenCover XML. Coverlet now produces one on this branch, so dif |
+| Roslyn analyzers (cognitive complexity) | active | The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to S |
+| Roslyn SAST analyzers | active | The sheet says 'roslyn sast', also not a package. Resolved here to SecurityCodeScan.VS20 |
 | Roslyn SemanticModel.AnalyzeDataFlow | not-installed | PROPOSED REPAIR, not in the source sheet. The sheet assigns Data Flow to Stryker.NET, a  |
 | dotnet list package --vulnerable | skipped | Requires PackageReference and an SDK-style project. Structurally impossible on the packa |
-| Coverlet | not-installed | STATUS CHANGED AT THIS FAMILY. net45 and net46 sat below netstandard2.0, whose .NET Fram |
-| AltCover | not-installed | Declares .NET Framework 2.0+ via a net20 recorder, so it is the one coverage tool in the |
+| Coverlet | active | coverlet.collector 6.0.0 is a PackageReference in the test project, since packages.confi |
+| AltCover | active | altcover.global 8.8.173 is pinned in .config/dotnet-tools.json. It instruments the built |
 | MiniCover | skipped | MiniCover 3.10.0 declares .NET SDK 8.0/9.0/10.0 only -- verified against its own MiniCov |
-| Stryker.NET | skipped | Requires an SDK-style project and a modern SDK to run. Also: the sheet makes it primary  |
-| OpenTelemetry (.NET) + OTLP exporter | not-installed | STATUS CHANGED AT THIS FAMILY, for the same reason as Coverlet: netstandard2.0 clears at |
+| Stryker.NET | active | dotnet-stryker 4.0.0 is pinned in .config/dotnet-tools.json and mutates this family: it  |
+| OpenTelemetry (.NET) + OTLP exporter | skipped | OpenTelemetry 1.19.1 and its OTLP exporter are restored into the test project, and Traci |
 | unilyze | absent | NOT A TOOL. The only package of this name anywhere is PyPI `unilyze` 0.2.1, 'Get detaile |
+
+## Tool versions
+
+Tool pins follow the C# sheet of the Whitebox Tools Registry. `dataset.json`
+`toolPins` is the machine-readable copy.
+
+| Tool | Version | Declared in |
+|---|---|---|
+| Coverlet (`coverlet.collector`) | 6.0.0 | the project files |
+| Microsoft.CodeAnalysis.NetAnalyzers | 8.0.0 | the project files |
+| SonarAnalyzer.CSharp | 9.32.0.97167 | the project files |
+| SecurityCodeScan.VS2019 | 5.6.7 | the project files |
+| OpenTelemetry + OTLP exporter | 1.19.1 | the project files |
+| AltCover (`altcover.global`) | 8.8.173 | `.config/dotnet-tools.json` |
+| Stryker.NET (`dotnet-stryker`) | 4.0.0 | `.config/dotnet-tools.json` |
+| Lizard | 1.17.10 | scanning host |
+| jscpd | 4.0.5 | scanning host |
+| Semgrep | 1.50.0 | scanning host |
+| PyDriller | 2.7 | scanning host |
+
+Two pins are not the registry's own. It lists AltCover 8.8.0, which was never
+published as a tool; 8.8.173 is the release of that line. It lists no version for
+OpenTelemetry.
 
 ## Build
 
@@ -91,17 +115,18 @@ never ran" - so the source-level tools below are the built-in negative control:
 ./build.sh
 ```
 
-Restore will not succeed on a host where NuGet is unreachable; see `dataset.json`
-`blockedHosts`.
+The prerequisites are a .NET SDK that satisfies `global.json` and access to
+`api.nuget.org`. The build and test tooling is declared as PackageReference, because an SDK-style
+project cannot consume `packages.config`. The planted pins stay in
+`packages.config` and stay inert: see `PACKAGES-CONFIG.INERT.md`.
 
 ## Test
 
 ```bash
-./build.sh          # the test step is wired into the build
+dotnet test OrderKit.sln
 ```
 
-19 tests are declared. They are **not** executed in this corpus's build, because no
-test framework can be restored.
+19 test methods are declared; NUnit expands them to 21 cases, all passing.
 
 ## Tool entry points
 
