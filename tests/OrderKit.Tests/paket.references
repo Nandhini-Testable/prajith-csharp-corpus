@@ -1,6 +1,10 @@
-Newtonsoft.Json
-System.Net.Http
-Microsoft.AspNet.Mvc
-System.Text.RegularExpressions
-BouncyCastle
+group Test
 NUnit
+NUnit3TestAdapter
+Microsoft.NET.Test.Sdk
+coverlet.collector
+OpenTelemetry
+OpenTelemetry.Exporter.OpenTelemetryProtocol
+Microsoft.CodeAnalysis.NetAnalyzers
+SonarAnalyzer.CSharp
+SecurityCodeScan.VS2019

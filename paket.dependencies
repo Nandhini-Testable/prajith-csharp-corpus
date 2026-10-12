@@ -1,10 +1,37 @@
 source https://api.nuget.org/v3/index.json
 framework: net7.0
-storage: packages
+storage: none
+// Take the lowest version that satisfies, as NuGet does.
+strategy: min
 
+// Planted, deliberately vulnerable pins -- see PLANTED-CVES.md.
 nuget Newtonsoft.Json 9.0.1
 nuget System.Net.Http 4.3.0
 nuget Microsoft.AspNet.Mvc 5.2.3
 nuget System.Text.RegularExpressions 4.3.0
 nuget BouncyCastle 1.8.1
-nuget NUnit 3.13.3
+
+// Roslyn analyzers. Pins follow the C# sheet of the Whitebox Tools Registry.
+nuget Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
+nuget SonarAnalyzer.CSharp 9.32.0.97167
+nuget SecurityCodeScan.VS2019 5.6.7
+
+// The test packages resolve on their own: the test host needs a newer
+// Newtonsoft.Json than the planted pin, and one group holds one version.
+group Test
+  source https://api.nuget.org/v3/index.json
+  framework: net7.0
+  storage: none
+
+  nuget NUnit 3.13.3
+  nuget NUnit3TestAdapter 4.5.0
+  nuget Microsoft.NET.Test.Sdk 17.8.0
+  nuget coverlet.collector 6.0.0
+  nuget OpenTelemetry 1.19.1
+  nuget OpenTelemetry.Exporter.OpenTelemetryProtocol 1.19.1
+  nuget Microsoft.TestPlatform.TestHost 17.8.0
+  nuget Microsoft.TestPlatform.ObjectModel 17.8.0
+  nuget Microsoft.CodeCoverage 17.8.0
+  nuget Microsoft.CodeAnalysis.NetAnalyzers 8.0.0
+  nuget SonarAnalyzer.CSharp 9.32.0.97167
+  nuget SecurityCodeScan.VS2019 5.6.7
