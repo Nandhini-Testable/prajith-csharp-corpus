@@ -2,14 +2,14 @@
 tool: Stryker.NET
 slug: stryker
 kind: sdk
-status: skipped
+status: active
 target_framework: net7.0
 language_version: "11.0"
 runner: tools/stryker/run.sh
 expects:
-  exit_code: 3
+  exit_code: 0
   reason: >-
-    Requires an SDK-style project and a modern SDK to run. Also: the sheet makes it primary for 16 Data Flow metrics, which it cannot compute -- see roslyn-dataflow.
+    dotnet-stryker 4.0.0 is pinned in .config/dotnet-tools.json and mutates this family: it restores the solution, mutates the library, runs the tests against each mutant and writes a mutation report. Also: the sheet makes it primary for 16 Data Flow metrics, which it cannot compute -- see roslyn-dataflow.
 metrics:
   primary_for: 23
   alternative_for: 7
