@@ -2,14 +2,14 @@
 tool: Coverlet
 slug: coverlet
 kind: sdk
-status: skipped
+status: active
 target_framework: net46
 language_version: "6"
 runner: tools/coverlet/run.sh
 expects:
-  exit_code: 3
+  exit_code: 0
   reason: >-
-    Coverlet ships netstandard2.0, whose .NET Framework floor is net461. This family is net46 -- ONE PATCH RELEASE below it. Coverlet is the primary for 18 metrics (statement 5, branch 7, delta 6), so the whole coverage block turns on a single patch digit rather than on anything about the language or the tool.
+    coverlet.collector 6.0.0 is restored by Paket into the test project, so `dotnet test --collect` produces Cobertura XML. No current test host runs this target framework, so the tests compile for .NET 8 and exercise the library as built.
 metrics:
   primary_for: 18
   alternative_for: 0
