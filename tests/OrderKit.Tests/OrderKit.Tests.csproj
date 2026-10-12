@@ -1,11 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <!-- This runtime is out of support and rarely installed. Let the test host start on
+         the nearest newer runtime instead of refusing to run. -->
+    <RollForward>Major</RollForward>
     <AssemblyName>OrderKit.Tests</AssemblyName>
     <RootNamespace>OrderKit.Tests</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A solution-wide /p:ErrorLog names one SARIF file for every project, and the
+         last project to compile wins. Dropping it here leaves the library's log intact. -->
+    <ErrorLog></ErrorLog>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OrderKit\OrderKit.csproj" />
+    <ProjectReference Include="..\..\src\OrderKit\OrderKit.csproj" />
   </ItemGroup>
 
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
