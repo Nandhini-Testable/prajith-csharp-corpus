@@ -2,14 +2,14 @@
 tool: diff-cover
 slug: diff-cover
 kind: standalone
-status: skipped
+status: active
 target_framework: net8.0
 language_version: "12.0"
 runner: tools/diff-cover/run.sh
 expects:
-  exit_code: 3
+  exit_code: 0
   reason: >-
-    Class C: reads Cobertura/OpenCover XML. No coverage report can be produced on this family, so it has nothing to read.
+    Class C: reads Cobertura/OpenCover XML. Coverlet now produces one on this branch, so diff-cover has something to read wherever it is installed.
 metrics:
   primary_for: 0
   alternative_for: 6
