@@ -1,11 +1,19 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
+    <!-- A .NET Framework test host exists only on Windows (or under Mono). Elsewhere the
+         tests run on .NET 8 against the same net47 build of the library. -->
+    <TargetFramework Condition=" !$([MSBuild]::IsOSPlatform('Windows')) ">net8.0</TargetFramework>
     <AssemblyName>OrderKit.Tests</AssemblyName>
     <RootNamespace>OrderKit.Tests</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A solution-wide /p:ErrorLog names one SARIF file for every project, and the
+         last project to compile wins. Dropping it here leaves the library's log intact. -->
+    <ErrorLog></ErrorLog>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +24,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\OrderKit\OrderKit.csproj" />
+    <ProjectReference Include="..\..\src\OrderKit\OrderKit.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="OpenTelemetry" Version="1.19.1" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.19.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" PrivateAssets="all" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
