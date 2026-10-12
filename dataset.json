@@ -5,7 +5,9 @@
   "netLabel": ".NET 10",
   "languageVersion": "14.0",
   "languageVersionBelow": "13.0",
-  "sdkPin": "10.0.112",
+  "sdkPin": "8.0.100",
+  "sdkRollForward": "latestMajor",
+  "sdkRequiredToBuild": "10.0",
   "cell": {
     "bundler": "sdk-msbuild",
     "packageManager": "packagesconfig",
@@ -31,10 +33,10 @@
     "note": "The domain layer is byte-identical across all 24 branches of this family, so any tool-output difference is attributable to the cell variables and nothing else."
   },
   "expectations": {
-    "toolsActive": 5,
+    "toolsActive": 10,
     "toolsTotal": 19,
-    "metricsWithLivePrimary": 25,
-    "metricsDark": 78,
+    "metricsWithLivePrimary": 71,
+    "metricsDark": 32,
     "note": "A dark tool is a data point, not a failure. But a family in which NOTHING fires cannot distinguish 'correctly detected nothing' from 'the scan never ran', which is why the source-level tools below are the built-in negative control.",
     "negativeControl": [
       "lizard",
@@ -118,25 +120,25 @@
       "tool": "diff-cover",
       "slug": "diff-cover",
       "kind": "standalone",
-      "status": "skipped",
-      "expectedExitCode": 3,
-      "reason": "Class C: reads Cobertura/OpenCover XML. No coverage report can be produced on this family, so it has nothing to read."
+      "status": "active",
+      "expectedExitCode": 0,
+      "reason": "Class C: reads Cobertura/OpenCover XML. Coverlet now produces one on this branch, so diff-cover has something to read wherever it is installed."
     },
     {
       "tool": "Roslyn analyzers (cognitive complexity)",
       "slug": "roslyn-metrics",
       "kind": "analyzer",
-      "status": "not-installed",
-      "expectedExitCode": 4,
-      "reason": "The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to SonarAnalyzer.CSharp (rule S3776 is cognitive complexity). Analyzer packages come from NuGet, which is refused at this host's egress proxy."
+      "status": "active",
+      "expectedExitCode": 0,
+      "reason": "The sheet says 'Roslyn', which is a compiler platform, not a package. Resolved here to SonarAnalyzer.CSharp 9.32.0.97167 (rule S3776 is cognitive complexity), referenced as an analyzer package."
     },
     {
       "tool": "Roslyn SAST analyzers",
       "slug": "roslyn-sast",
       "kind": "analyzer",
-      "status": "not-installed",
-      "expectedExitCode": 4,
-      "reason": "The sheet says 'roslyn sast', also not a package. Resolved here to SecurityCodeScan + Microsoft.CodeAnalysis.NetAnalyzers. NuGet unreachable."
+      "status": "active",
+      "expectedExitCode": 0,
+      "reason": "The sheet says 'roslyn sast', also not a package. Resolved here to SecurityCodeScan.VS2019 5.6.7 + Microsoft.CodeAnalysis.NetAnalyzers 8.0.0, referenced as analyzer packages."
     },
     {
       "tool": "Roslyn SemanticModel.AnalyzeDataFlow",
@@ -158,17 +160,17 @@
       "tool": "Coverlet",
       "slug": "coverlet",
       "kind": "sdk",
-      "status": "not-installed",
-      "expectedExitCode": 4,
-      "reason": "STATUS CHANGED AT THIS FAMILY. net45 and net46 sat below netstandard2.0, whose .NET Framework floor is net461, so Coverlet was excluded by the TARGET FRAMEWORK and exited 3. This family is above that floor: nothing about net462 excludes Coverlet. It is now held out only by NuGet being refused at this host's egress proxy, which is a setup gap -- exit 4. The 18 metrics it is primary for (statement 5, branch 7, delta 6) are dark for a completely different reason than they were one family ago, and collapsing 3 and 4 would hide that."
+      "status": "active",
+      "expectedExitCode": 0,
+      "reason": "coverlet.collector 6.0.0 is a PackageReference in the test project, since packages.config cannot carry it, so `dotnet test --collect` produces Cobertura XML."
     },
     {
       "tool": "AltCover",
       "slug": "altcover",
       "kind": "sdk",
-      "status": "not-installed",
-      "expectedExitCode": 4,
-      "reason": "Declares .NET Framework 2.0+ via a net20 recorder, so it is the one coverage tool in the roster that could reach this family. Blocked only by NuGet."
+      "status": "active",
+      "expectedExitCode": 0,
+      "reason": "altcover.global 8.8.173 is pinned in .config/dotnet-tools.json. It instruments the built test output in place, so no project file names it."
     },
     {
       "tool": "MiniCover",
@@ -184,15 +186,15 @@
       "kind": "sdk",
       "status": "skipped",
       "expectedExitCode": 3,
-      "reason": "Requires an SDK-style project and a modern SDK to run. Also: the sheet makes it primary for 16 Data Flow metrics, which it cannot compute -- see roslyn-dataflow."
+      "reason": "MEASURED, not assumed: dotnet-stryker 4.0.0 (the pin in .config/dotnet-tools.json) restores and analyses this solution, then aborts with 'Stryker.NET could not compile the project after mutation'. Its bundled Roslyn predates C# 14 and rejects the newer syntax in the domain layer. No mutation report is written. A limit of that Stryker release on this family, not a setup gap. Also: the sheet makes it primary for 16 Data Flow metrics, which it cannot compute -- see roslyn-dataflow."
     },
     {
       "tool": "OpenTelemetry (.NET) + OTLP exporter",
       "slug": "opentelemetry",
       "kind": "sdk",
-      "status": "not-installed",
-      "expectedExitCode": 4,
-      "reason": "STATUS CHANGED AT THIS FAMILY, for the same reason as Coverlet: netstandard2.0 clears at net461, so the target framework no longer excludes it and only NuGet does. Note separately that tracing is not path coverage. The TypeScript corpus shipped an OTel bootstrap that registered a no-op processor, exported nothing and exited 0 -- a structurally zero result."
+      "status": "skipped",
+      "expectedExitCode": 3,
+      "reason": "OpenTelemetry 1.19.1 and its OTLP exporter are restored into the test project, and TracingSetup.cs in the test project wraps the run in a trace. Spans leave the process only when a collector is named; with none the export is dropped, which would be a structurally zero result. Note separately that tracing is not path coverage."
     },
     {
       "tool": "unilyze",
@@ -240,20 +242,42 @@
       }
     ]
   },
-  "blockedHosts": [
-    "api.nuget.org",
-    "www.nuget.org",
-    "globalcdn.nuget.org",
-    "builds.dotnet.microsoft.com",
-    "dot.net"
-  ],
+  "blockedHosts": [],
   "buildStatus": {
     "sourcesParse": true,
     "parseGate": "csc -langversion:14.0 clean; -langversion:13.0 FAILS (CS8025)",
-    "restored": false,
-    "compiledAgainstTargetPack": false,
-    "testsExecuted": false,
-    "reason": "NuGet is refused at this host's egress proxy, so no PackageReference resolves and no test framework is available. Sources are verified by the Roslyn parse gate instead -- the replacement for the build gate, not a substitute for it.",
-    "declaredTestCount": 19
+    "restored": true,
+    "compiledAgainstTargetPack": true,
+    "testsExecuted": true,
+    "reason": "A bare `dotnet restore OrderKit.sln` is enough for the build and test tooling, which is declared as PackageReference. The planted pins stay in packages.config and stay inert. Verified on SDK 10.0.303: build clean, every test passing.",
+    "declaredTestCount": 19,
+    "executedTestCount": 21
+  },
+  "requiredHosts": [
+    "api.nuget.org"
+  ],
+  "toolPins": {
+    "source": "C# sheet of the Whitebox Tools Registry. altcover.global 8.8.0 was never published, so the 8.8 line's 8.8.173 stands in for it",
+    "packages": {
+      "coverlet.collector": "6.0.0",
+      "Microsoft.CodeAnalysis.NetAnalyzers": "8.0.0",
+      "SonarAnalyzer.CSharp": "9.32.0.97167",
+      "SecurityCodeScan.VS2019": "5.6.7",
+      "NUnit": "3.13.3",
+      "NUnit3TestAdapter": "4.5.0",
+      "Microsoft.NET.Test.Sdk": "17.8.0",
+      "OpenTelemetry": "1.19.1",
+      "OpenTelemetry.Exporter.OpenTelemetryProtocol": "1.19.1"
+    },
+    "dotnetTools": {
+      "dotnet-stryker": "4.0.0",
+      "altcover.global": "8.8.173"
+    },
+    "scanningHost": {
+      "lizard": "1.17.10",
+      "jscpd": "4.0.5",
+      "semgrep": "1.50.0",
+      "pydriller": "2.7"
+    }
   }
 }
