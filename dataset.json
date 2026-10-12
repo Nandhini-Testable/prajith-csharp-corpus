@@ -5,7 +5,9 @@
   "netLabel": ".NET 10",
   "languageVersion": "14.0",
   "languageVersionBelow": "13.0",
-  "sdkPin": "10.0.112",
+  "sdkPin": "8.0.100",
+  "sdkRollForward": "latestMajor",
+  "sdkRequiredToBuild": "10.0",
   "cell": {
     "bundler": "sdk-msbuild",
     "packageManager": "paket",

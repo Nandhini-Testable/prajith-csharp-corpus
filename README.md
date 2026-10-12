@@ -111,8 +111,14 @@ family. See `tools/stryker/run.sh`.
 ./build.sh
 ```
 
-The only prerequisites are the .NET SDK pinned in `global.json` and access to
-`api.nuget.org`. A bare `dotnet restore OrderKit.sln` is enough on a fresh clone:
+The only prerequisites are a .NET 10 SDK and access to `api.nuget.org`.
+
+`global.json` names SDK 8.0.100 with `rollForward: latestMajor`, not a 10.0 SDK.
+That is deliberate: a host that selects its runtime from the `global.json` version
+and only registers an 8.0 runtime can still place this branch, and the CLI then
+rolls forward to the newest SDK installed. The projects target `net10.0`, so the
+build succeeds only where a .NET 10 SDK is present; an SDK 8-only host stops at
+restore with NETSDK1045. A bare `dotnet restore OrderKit.sln` is enough on a fresh clone:
 `.paket/Paket.Restore.targets` restores the Paket tool from
 `.config/dotnet-tools.json`, and Paket then restores the packages in `paket.lock`.
 
