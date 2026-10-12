@@ -1,28 +1,83 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
-    <TargetFramework>net46</TargetFramework>
+    <!-- No current test host runs this target framework, so the tests alone compile for
+         .NET 8 and exercise the net46 build of the library. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <AssetTargetFallback>$(AssetTargetFallback);net46</AssetTargetFallback>
     <AssemblyName>OrderKit.Tests</AssemblyName>
     <RootNamespace>OrderKit.Tests</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A solution-wide /p:ErrorLog names one SARIF file for every project. Each library
+         logs under its own obj folder; this project builds last and merges those logs
+         into the file that was asked for. Its own diagnostics are not logged. -->
+    <SolutionErrorLog>$(ErrorLog)</SolutionErrorLog>
+    <SolutionErrorLog Condition=" $(SolutionErrorLog.Contains(',')) ">$(SolutionErrorLog.Substring(0, $(SolutionErrorLog.IndexOf(','))))</SolutionErrorLog>
+    <ErrorLog></ErrorLog>
   </PropertyGroup>
 
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\OrderKit.Domain\OrderKit.Domain.csproj" />
+    <ProjectReference Include="..\..\src\OrderKit.Contracts\OrderKit.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\Services\OrderKit.Pricing\OrderKit.Pricing.csproj" />
+    <ProjectReference Include="..\..\src\Services\OrderKit.Risk\OrderKit.Risk.csproj" />
+    <ProjectReference Include="..\..\src\Services\OrderKit.Reporting\OrderKit.Reporting.csproj" />
+  </ItemGroup>
+
+  <UsingTask TaskName="MergeSarif" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Logs ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Output ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Collections.Generic" />
+      <Using Namespace="System.IO" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        var runs = new List<string>();
+        foreach (var log in Logs)
+        {
+            if (!File.Exists(log.ItemSpec)) continue;
+            string text = File.ReadAllText(log.ItemSpec);
+            int key = text.IndexOf("\"runs\"");
+            int open = key < 0 ? -1 : text.IndexOf('[', key);
+            int close = text.LastIndexOf(']');
+            if (open < 0 || close <= open) continue;
+            string body = text.Substring(open + 1, close - open - 1).Trim();
+            if (body.Length > 0) runs.Add(body);
+        }
+        File.WriteAllText(Output,
+            "{\n  \"$schema\": \"http://json.schemastore.org/sarif-2.1.0\",\n  \"version\": \"2.1.0\",\n  \"runs\": [\n"
+            + string.Join(",\n", runs) + "\n  ]\n}\n");
+      ]]></Code>
+    </Task>
+  </UsingTask>
+  <Target Name="MergeAnalysisLogs" AfterTargets="Build" Condition=" '$(SolutionErrorLog)' != '' ">
+    <ItemGroup>
+      <_AnalysisLog Include="@(ProjectReference->'%(RootDir)%(Directory)obj\%(Filename).sarif')" />
+    </ItemGroup>
+    <MergeSarif Logs="@(_AnalysisLog)" Output="$(SolutionErrorLog)" />
+  </Target>
   <ItemGroup>
     <PackageReference Include="NUnit" />
-    <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Net.Http" />
-    <PackageReference Include="Microsoft.AspNet.Mvc" />
-    <PackageReference Include="System.Text.RegularExpressions" />
-    <PackageReference Include="BouncyCastle" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
   </ItemGroup>
-
+  <!-- The test host needs a newer Newtonsoft.Json than the planted pin, so the central
+       pins are not forced onto this project's transitive packages. -->
+  <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\OrderKit.Domain\OrderKit.Domain.csproj" />
-    <ProjectReference Include="..\..\OrderKit.Contracts\OrderKit.Contracts.csproj" />
-    <ProjectReference Include="..\..\OrderKit.Pricing\OrderKit.Pricing.csproj" />
-    <ProjectReference Include="..\..\OrderKit.Risk\OrderKit.Risk.csproj" />
-    <ProjectReference Include="..\..\OrderKit.Reporting\OrderKit.Reporting.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" />
+    <PackageReference Include="SecurityCodeScan.VS2019" PrivateAssets="all" />
   </ItemGroup>
-
 </Project>
