@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,6 +6,10 @@
     <RootNamespace>OrderKit.Risk</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <!-- A solution-wide /p:ErrorLog names one SARIF file for every project. Projects that
+         compile in parallel would overwrite or interleave it, so each library logs under
+         its own obj folder and the test project, which builds last, merges them. -->
+    <ErrorLog Condition=" '$(ErrorLog)' != '' ">$(MSBuildProjectDirectory)\obj\$(MSBuildProjectName).sarif,version=2.1</ErrorLog>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,4 +24,9 @@
     <ProjectReference Include="..\..\OrderKit.Domain\OrderKit.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" />
+    <PackageReference Include="SecurityCodeScan.VS2019" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
