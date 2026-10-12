@@ -3,3 +3,7 @@ System.Net.Http
 Microsoft.AspNet.Mvc
 System.Text.RegularExpressions
 BouncyCastle
+Microsoft.CodeAnalysis.NetAnalyzers
+SonarAnalyzer.CSharp
+SecurityCodeScan.VS2019
+StyleCop.Analyzers
