@@ -4,7 +4,21 @@
   "tools": {
     "cake.tool": {
       "version": "5.0.0",
-      "commands": [ "dotnet-cake" ]
+      "commands": [
+        "dotnet-cake"
+      ]
+    },
+    "dotnet-stryker": {
+      "version": "4.0.0",
+      "commands": [
+        "dotnet-stryker"
+      ]
+    },
+    "altcover.global": {
+      "version": "8.8.173",
+      "commands": [
+        "altcover"
+      ]
     }
   }
 }
