@@ -2,14 +2,14 @@
 tool: Coverlet
 slug: coverlet
 kind: sdk
-status: skipped
+status: active
 target_framework: net45
 language_version: "5"
 runner: tools/coverlet/run.sh
 expects:
-  exit_code: 3
+  exit_code: 0
   reason: >-
-    Coverlet ships netstandard2.0; its .NET Framework floor is net461. This family is below that floor.
+    coverlet.collector 6.0.0 is restored by Paket into the test project, so `dotnet test --collect` produces Cobertura XML. No current test host runs this target framework, so the tests compile for .NET 8 and exercise the library as built.
 metrics:
   primary_for: 18
   alternative_for: 0
