@@ -5,7 +5,15 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 . "$REPO_ROOT/tools/_skip.sh"
 
 # --- why this tool has the status it has on this family -------------------
-# Coverlet ships netstandard2.0, whose .NET Framework floor is net461. This family is net46 -- ONE PATCH RELEASE below it. Coverlet is the primary for 18 metrics (statement 5, branch 7, delta 6), so the whole coverage block turns on a single patch digit rather than on anything about the language or the tool.
-skip "Coverlet ships netstandard2.0, whose .NET Framework floor is net461"
+# coverlet.collector 6.0.0 is referenced by the test project, with its version in Directory.Packages.props, so `dotnet test --collect` produces Cobertura XML. No current test host runs this target framework, so the tests compile for .NET 8 and exercise the library as built.
 
+require_restore
+OUT="$(report_dir)"
+dotnet test "$REPO_ROOT/OrderKit.sln" --no-restore --nologo \
+  --collect:"XPlat Code Coverage" --results-directory "$OUT/coverlet" -v minimal \
+  > "$OUT/coverlet.log" 2>&1 || exit 1
+report="$(find "$OUT/coverlet" -name coverage.cobertura.xml | head -n 1)"
+[ -n "$report" ] || exit 1
+cp "$report" "$OUT/coverage.cobertura.xml"
+grep -o '<coverage [^>]*' "$OUT/coverage.cobertura.xml" | head -n 1
 exit 0
