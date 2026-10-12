@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="ErrorLog">
 
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
@@ -6,6 +6,9 @@
     <RootNamespace>OrderKit</RootNamespace>
     <!-- LangVersion is deliberately NOT set. It defaults from the TargetFramework,
          which is what makes the family axis one number instead of two. -->
+    <!-- MSBuild splits /p:ErrorLog=path,version=2.1 at the comma, which silently
+         downgrades the log to SARIF 1.0. Put the version back when it is missing. -->
+    <ErrorLog Condition=" '$(ErrorLog)' != '' And !$(ErrorLog.Contains(',')) ">$(ErrorLog),version=2.1</ErrorLog>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,4 +19,10 @@
     <PackageReference Include="BouncyCastle" Version="1.8.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" PrivateAssets="all" />
+    <PackageReference Include="SecurityCodeScan.VS2019" Version="5.6.7" PrivateAssets="all" />
+  </ItemGroup>
 </Project>
