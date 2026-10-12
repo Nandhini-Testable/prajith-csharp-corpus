@@ -33,9 +33,16 @@ require_python_module() {
   python3 -c "import $1" >/dev/null 2>&1 || missing "python module '$1' not importable"
 }
 
-require_restore() { # every NuGet-backed tool needs this and none of them have it
-  [ -d "$REPO_ROOT/packages" ] || [ -d "$HOME/.nuget/packages" ] \
-    || skip "no restored package graph; NuGet is refused at this host's egress proxy"
+require_restore() { # every NuGet-backed tool starts from a restored solution
+  require_cmd dotnet
+  dotnet restore "$REPO_ROOT/OrderKit.sln" --nologo -v quiet >/dev/null 2>&1 \
+    || missing "dotnet restore failed: the pinned SDK is absent or NuGet is unreachable"
+}
+
+sarif_build() {     # $1 = SARIF path. Compiles the library code with every analyzer on.
+  dotnet build "$REPO_ROOT/OrderKit.sln" --no-restore --no-incremental \
+    -c Release -nologo -v quiet "-p:ErrorLog=$1,version=2.1" \
+    -p:AnalysisMode=AllEnabledByDefault >/dev/null 2>&1
 }
 
 # Translate a tool's own exit code without letting it collide with our namespace.
